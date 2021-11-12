@@ -1,7 +1,9 @@
 // div for profile information
 const overview = document.querySelector(".overview");
 const username = "PTroyP";
-const reposList = document.querySelector(".repo-list");
+const repoList = document.querySelector(".repo-list");
+const reposInfo = document.querySelector(".repos");
+const repoData = document.querySelector(".repo-data");
 
 // retrieve user info from github
 const profileInfo = async function() {
@@ -45,5 +47,47 @@ const individualRepo = function(repos) {
         const listItem = document.createElement("li");
         listItem.classList.add("repo");
         listItem.innerHTML = `<h3>${entry.name}</h3>`;
-        reposList.append(listItem);
+        repoList.append(listItem);
 }}
+
+repoList.addEventListener("click", function(e) {
+    if (e.target.matches("h3")) {
+        const repoName = e.target.innerText;
+        console.log(repoName);
+        specificRepoInfo(repoName);
+    }    
+});
+
+const specificRepoInfo = async function (repoName) {
+    const resSpecific = await fetch(`https://api.github.com/repos/${username}/${repoName}`);
+    const repoInfo = await resSpecific.json();
+    console.log(repoInfo);
+
+    const fetchLanguages = await fetch(`https://api.github.com/repos/${username}/${repoName}/languages`);
+    const languageData = await fetchLanguages.json();
+    console.log(languageData);
+
+    const languages = [];
+        for(let key in languageData) {
+            languages.push(key);
+            console.log(languages);
+        }
+    // console.log(languages);
+    displaySpecRepoInfo(repoInfo, languages);
+
+}
+
+const displaySpecRepoInfo = function(repoInfo, languages) {
+    repoData.innerHTML = "";
+    const indyRepo = document.createElement("div");
+    indyRepo.innerHTML = `
+        <h3>Name: ${repoInfo.name}</h3>
+            <p>Description: ${repoInfo.description}</p>
+            <p>Default Branch: ${repoInfo.default_branch}</p>
+            <p>Languages: ${languages.join(", ")}</p>
+            <a class = "visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on Github!</a>
+            `
+    repoData.append(indyRepo);
+    repoData.classList.remove("hide");
+    reposInfo.classList.add("hide");
+}
